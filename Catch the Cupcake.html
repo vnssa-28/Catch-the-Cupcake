@@ -1,0 +1,356 @@
+<html>
+	<head>
+		<title>Catch the Cupcakes</title>
+		<style type="text/css">
+			canvas {display: block; margin: 0 auto;}
+		</style>
+	</head>
+	<body>
+		<audio id="play_game">
+			<source src="Snail's House - Grape Soda [Tasty Release].mp3" type="audio/mp3" />
+		</audio>
+		<audio id="cupcake_caught">
+			<source src="pop pop.mp3" type="audio/mp3" />
+		</audio>
+		<audio id="game_over">
+			<source src="PacMan Game Over.mp3" type="audio/mp3" />
+		</audio>
+		<script>
+			var canvas = document.createElement("canvas");
+			var ctx = canvas.getContext("2d");
+			canvas.width = 500;
+			canvas.height = 500;
+			document.body.appendChild(canvas);
+
+			var bgReady = false;
+			var bgImage = new Image();
+			bgImage.onload = function () {
+				bgReady = true;
+			};
+			bgImage.src = "pastelkitchen.jpg";
+
+			var playerReady = false;
+			var playerImage = new Image();
+			playerImage.onload = function () {
+				playerReady = true;
+			};
+			playerImage.src = "Untitled3.png";
+
+			var cupcakeReady = false;
+			var cupcakeImage = new Image();
+			cupcakeImage.onload = function () {
+				cupcakeReady = true;
+			};
+			cupcakeImage.src = "Untitled2.png";
+
+			var cupcake1Ready = false;
+			var cupcake1Image = new Image();
+			cupcake1Image.onload = function () {
+				cupcake1Ready = true;
+			};
+			cupcake1Image.src = "Untitled2.png";
+
+			var cupcake2Ready = false;
+			var cupcake2Image = new Image();
+			cupcake2Image.onload = function () {
+				cupcake2Ready = true;
+			};
+			cupcake2Image.src = "Untitled2.png";
+
+			var donutReady = false;
+			var donutImage = new Image();
+			donutImage.onload = function () {
+				donutReady = true;
+			}
+			donutImage.src = "Untitled4.png";
+
+			var pizzaReady = false;
+			var pizzaImage = new Image();
+			pizzaImage.onload = function () {
+				pizzaReady = true;
+			}
+			pizzaImage.src = "Untitled5.png";
+
+			var gameover_page = new Image();
+			gameover_page.src = "2016-12-26 13.56.27.jpg"
+
+			var cupcakesCaught = 0;
+			var lives = 30;
+			var x = canvas.width/2;
+		    var y = canvas.height-30;
+		    var dx = 4;
+		    var dy = -4;
+			var player = {speed: 275};
+			var cupcake = {};
+			var cupcake1 = {};
+			var cupcake2 = {};
+			var donut = {};
+			var pizza = {};
+			var keysDown = {};
+			var gameOver = false;
+			var restart = false;
+
+			var playGame = document.getElementById("play_game");
+			var eatCupcake = document.getElementById("cupcake_caught");
+			var gameEnd = document.getElementById("game_over");
+
+			addEventListener("keydown", function (e) {keysDown[e.keyCode] = true;}, false);
+			addEventListener("keyup", function (e) {delete keysDown[e.keyCode];}, false);
+			document.addEventListener("mousemove", mouseMoveHandler, false);
+
+			function mouseMoveHandler(e) {
+				var mousemovex = e.clientX - canvas.offsetLeft;
+				if (mousemovex > -30 && mousemovex < canvas.width){
+					player.x = mousemovex;
+				}
+			}
+
+			function start() {
+				player.x = canvas.width/2;
+				player.y = canvas.height-60;
+
+				cupcake.x = 32 + (Math.random() * (canvas.width - 64));
+				cupcake.y = 0;
+			}
+
+			function newCupcake() {
+				cupcake.x = 32 + (Math.random() * (canvas.width - 64));
+				cupcake.y = 0;
+			}
+
+			function newCupcake1() {
+				cupcake1.x = 32 + (Math.random() * (canvas.width - 64));
+				cupcake1.y = 0;	
+			}
+
+			function newCupcake2() {
+				cupcake2.x = 32 + (Math.random() * (canvas.width - 64));
+				cupcake2.y = 0;	
+			}
+
+			function drawDonut() {
+				donut.x = 32 + (Math.random() * (canvas.width - 64));
+				donut.y = 0;
+			}
+
+			function drawPizza() {
+				pizza.x = 32 + (Math.random() * (canvas.width - 64));
+				pizza.y = 0;
+			}
+
+			function drawScore() {
+				ctx.fillStyle = "rgb(250, 250, 250)";
+				ctx.font = "24px Trebuchet Ms";
+				ctx.textAlign = "left";
+				ctx.textBaseline = "top";
+				ctx.fillText("Score: " + cupcakesCaught, 8, 8);
+			}
+
+			function drawLive() {
+				ctx.fillStyle = "rgb(250, 250, 250)";
+				ctx.font = "24px Trebuchet Ms";
+				ctx.textAlign = "right";
+				ctx.textBaseline = "top";
+				ctx.fillText("Lives left: " + lives, canvas.width-8, 8);
+			}
+
+			function gameOverPage() {
+		        ctx.drawImage(gameover_page, 0, 0);
+
+		        ctx.beginPath();
+		        ctx.rect(40, 200, (canvas.width/2)+165, 110);
+		        ctx.fillStyle = "#d8d8d8";
+		        ctx.fill();
+		        ctx.closePath();
+
+				ctx.fillStyle = "black";
+				ctx.font = "35px Trebuchet MS";
+				ctx.textAlign = "center";
+				ctx.textBaseline = "center";
+				ctx.fillText("You lose! Your score is " + cupcakesCaught, canvas.width/2, (canvas.height/2)-35);	
+
+				ctx.fillStyle = "black";
+				ctx.font = "35px Trebuchet MS";
+				ctx.textAlign = "center";
+				ctx.textBaseline = "center";
+				ctx.fillText("Press SPACE to play again!", canvas.width/2, canvas.height/2);
+			}
+
+			function score(modifier) {
+				if (37 in keysDown) {player.x -= player.speed * modifier;}
+				if (39 in keysDown) {player.x += player.speed * modifier;}
+
+				cupcake.y += 5;
+				cupcake1.y += 5;
+				cupcake2.y += 5;
+				donut.y += 5;
+
+				if ( pizza.x < 0 || pizza.x > canvas.width ) {
+					dx =- dx;
+				}
+				if( pizza.y < 0 || pizza.y > canvas.height ) {
+					dy =- dy;
+				}
+				pizza.x += dx;
+				pizza.y += dy;
+
+				//donut's collision
+				if (player.x <= (donut.x + 32) && donut.x <= (player.x + 32) && player.y <= (donut.y + 32) && donut.y <= (player.y + 32)) {
+					eatCupcake.play();
+					lives++;
+					newCupcake1();
+					donut.x = canvas.width+50;
+					donut.y = canvas.height+50;
+				} else if (donut.y == canvas.height) {
+					newCupcake1();
+				}
+
+				//pizza's collision
+				if (player.x <= (pizza.x + 32) && pizza.x <= (player.x + 32) && player.y <= (pizza.y + 32) && pizza.y <= (player.y + 32)) {
+					eatCupcake.play();
+					lives += 5;
+					newCupcake2();
+					pizza.x = canvas.width+50;
+					pizza.y = canvas.height+50;
+				}
+
+				if (player.x <= (cupcake.x + 32) && cupcake.x <= (player.x + 32) && player.y <= (cupcake.y + 32) && cupcake.y <= (player.y + 32)) {
+					eatCupcake.play();
+					cupcakesCaught++;
+					if (cupcakesCaught%10==0){
+						drawDonut();
+						newCupcake();
+					} else if (cupcakesCaught%13==0){
+						newCupcake();
+						drawPizza();
+					} else {
+						newCupcake();
+					}
+				} else if (cupcake.y==canvas.height){
+					if (lives==0){
+						gameOver = true;	
+						playGame.pause();
+						gameEnd.play();
+					} else {
+						lives--;
+						newCupcake();
+					}
+				} 
+
+				if (player.x <= (cupcake1.x + 32) && cupcake1.x <= (player.x + 32) && player.y <= (cupcake1.y + 32) && cupcake1.y <= (player.y + 32)) {
+					eatCupcake.play();
+					cupcakesCaught++;
+					if (cupcakesCaught%10==0){
+						drawDonut();
+						newCupcake1();
+					} else if (cupcakesCaught%13==0){
+						newCupcake1();
+						drawPizza();
+					} else {
+						newCupcake1();
+					}
+				} else if (cupcake1.y==canvas.height){
+					if (lives==0){
+						gameOver = true;
+						playGame.pause();
+						gameEnd.play();
+					} else {
+						lives--;
+						newCupcake1();
+					}
+				} 
+
+				if (player.x <= (cupcake2.x + 32) && cupcake2.x <= (player.x + 32) && player.y <= (cupcake2.y + 32) && cupcake2.y <= (player.y + 32)) {
+					eatCupcake.play();
+					cupcakesCaught++;
+					if (cupcakesCaught%10==0){
+						drawDonut();
+						newCupcake2();
+					} else if (cupcakesCaught%13==0){
+						newCupcake2();
+						drawPizza();
+					} else {
+						newCupcake2();
+					}
+				} else if (cupcake2.y==canvas.height){
+					if (lives==0){
+						gameOver = true;
+						playGame.pause();
+						gameEnd.play();
+					} else {
+						lives--;
+						newCupcake2();
+					}
+				} 
+			};
+
+			function draw() {
+				playGame.play();
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				if (bgReady) {
+					ctx.drawImage(bgImage, 0, 0);
+				}
+
+				if (playerReady) {
+					ctx.drawImage(playerImage, player.x, player.y);
+				}
+
+				if (cupcakeReady) {
+					ctx.drawImage(cupcakeImage, cupcake.x, cupcake.y);
+				}
+
+				if (cupcake1Ready) {
+					ctx.drawImage(cupcake1Image, cupcake1.x, cupcake1.y);
+				}
+
+				if (cupcake2Ready) {
+					ctx.drawImage(cupcake2Image, cupcake2.x, cupcake2.y);
+				}
+
+				if (donutReady) {
+					ctx.drawImage(donutImage, donut.x, donut.y);
+				}
+
+				if (pizzaReady) {
+					ctx.drawImage(pizzaImage, pizza.x, pizza.y);	
+				}
+
+				drawScore();
+				drawLive();
+
+				if (gameOver) {
+					restart = true;
+					gameOverPage();
+				}
+			};
+
+			function main() {
+				var now = Date.now();
+				var delta = now - then;
+
+				score(delta / 1000);
+				draw();
+
+				then = now;
+
+				requestAnimationFrame(main);
+			};
+
+			var w = window;
+			requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
+
+			var then = Date.now();
+			start();
+			main();
+
+			document.body.onkeyup = function(e){
+		        if(e.keyCode == 32){
+		            if(restart){
+		                document.location.reload();
+		            }
+		        }
+    		}
+		</script>
+	</body>
+</html>
